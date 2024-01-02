@@ -51,3 +51,38 @@ button:hover {
   text-align: center;
   margin: 0;
 }
+input[type="radio"] {
+  display: none;
+}
+input[type="radio"] + label {
+  display: block;
+  text-align: center;
+  padding: 5px 10px;
+  font-size: 1.8rem;
+  width: 60%;
+  margin: 0 auto;
+  border-radius: 20px;
+}
+
+input[type="radio"] + label:hover {
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.425);
+  background-color: rgba(0, 0, 0, 0.13);
+  cursor: pointer;
+}
+input[type="radio"]:checked + label {
+  background-color: rgb(177, 177, 18);
+}
+#go-calcul {
+  padding: 1rem 3rem;
+  font-size: 1.4rem;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  background-color: rgb(1, 207, 80);
+  font-weight: bold;
+  margin: 0 auto;
+  display: block;
+}
+#go-calcul:hover {
+  background-color: rgb(17, 216, 93);
+}

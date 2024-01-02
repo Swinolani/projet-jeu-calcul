@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NavComponent } from '../components/nav.component';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -75,8 +75,13 @@ import { FormsModule, NgForm } from '@angular/forms';
             value="soustraction"
             id="soustraction"
           /><label for="soustraction">Soustractions seulement</label><br />
-          <input type="submit" value="Place au calcul !" />
+          <input type="submit" value="Place au calcul !" id="go-calcul" />
         </form>
+        @if (erreurBoutonCalculAvantJeu!="") {
+        <p style="margin:0 auto;text-align:center;font-weight:bold;color:red">
+          {{ erreurBoutonCalculAvantJeu }}
+        </p>
+        }
       </div>
     </section>
   `,
@@ -90,6 +95,8 @@ export class AccueilComponent {
   multiplication: String;
   addition: String;
   soustraction: String;
+
+  erreurBoutonCalculAvantJeu: String | undefined;
   parametre(section: HTMLElement) {
     section.style.display = '';
 
@@ -104,6 +111,11 @@ export class AccueilComponent {
     }
   }
   redirectCalcul(form: NgForm) {
-    console.log(form.value.mode); //Provisoire
+    if (form.value.mode == undefined) {
+      this.erreurBoutonCalculAvantJeu = 'Selectionnez un niveau !';
+    } else {
+      this.erreurBoutonCalculAvantJeu = '';
+      //Redirect dans le composant calcul et à sn init, un decompte avant le jeu!
+    }
   }
 }
