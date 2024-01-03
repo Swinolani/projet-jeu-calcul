@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NavComponent } from '../components/nav.component';
 import { FormsModule, NgForm } from '@angular/forms';
 
@@ -86,7 +86,7 @@ import { FormsModule, NgForm } from '@angular/forms';
     </section>
   `,
   styleUrl: '../../assets/css/accueil.component.css',
-  imports: [NavComponent, FormsModule],
+  imports: [NavComponent, FormsModule, RouterModule],
 })
 export class AccueilComponent {
   toutOperation: String;
@@ -97,6 +97,8 @@ export class AccueilComponent {
   soustraction: String;
 
   erreurBoutonCalculAvantJeu: String | undefined;
+
+  constructor(private router: Router) {}
   parametre(section: HTMLElement) {
     section.style.display = '';
 
@@ -115,7 +117,7 @@ export class AccueilComponent {
       this.erreurBoutonCalculAvantJeu = 'Selectionnez un niveau !';
     } else {
       this.erreurBoutonCalculAvantJeu = '';
-      //Redirect dans le composant calcul et à sn init, un decompte avant le jeu!
+      this.router.navigate(['calcul']);
     }
   }
 }
