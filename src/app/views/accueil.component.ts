@@ -117,6 +117,7 @@ export class AccueilComponent {
       this.erreurBoutonCalculAvantJeu = 'Selectionnez un niveau !';
     } else {
       this.erreurBoutonCalculAvantJeu = '';
+      // Envoyer form.value.mode dans un service que l'on recup dans calcul
       this.router.navigate(['calcul']);
     }
   }
