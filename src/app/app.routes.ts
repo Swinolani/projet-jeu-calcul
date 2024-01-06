@@ -5,12 +5,14 @@ import { ClassementComponent } from './views/classement.component';
 import { LogComponent } from './views/log.component';
 import { ConnexionComponent } from './components/connexion.component';
 import { InscriptionComponent } from './components/inscription.component';
+import { InformationComponent } from './views/information.component';
 
 export const routes: Routes = [
   { path: 'accueil', component: AccueilComponent },
   { path: '', redirectTo: 'accueil', pathMatch: 'full' },
   { path: 'calcul', component: CalculComponent },
   { path: 'classement', component: ClassementComponent },
+  { path: 'infos', component: InformationComponent },
   {
     path: 'login',
     component: LogComponent,

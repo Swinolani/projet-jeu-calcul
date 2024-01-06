@@ -1,4 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { OutilJeuService } from '../services/outil-jeu.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-calcul',
@@ -13,14 +15,16 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
     <p #text class="text">A vos claviers ! Vous avez 3 minutes !</p>
     <div #jeuCalcul class="calcul">
       <div class="elemCalcul">
-        25+35=<input
+        {{ nombreRandom1
+        }}{{ operateurRandom != undefined ? operateurRandom : '??'
+        }}{{ nombreRandom2 }}=<input
           type="text"
           name="result"
           id="result"
           maxlength="4"
           checked
           #resultat
-          (keyup)="gestionCalcul(resultat.value, $event)"
+          (keypress)="gestionCalcul(resultat.value, $event)"
         />
       </div>
     </div>
@@ -94,14 +98,70 @@ export class CalculComponent implements AfterViewInit {
   @ViewChild('text') private text: ElementRef<HTMLParagraphElement>;
 
   //Autres attribut
+  // Relatif au chrono
   compteur: number = 3;
   minute: number = 3;
   seconde: number = 0;
   ms: number = 0;
+
+  constructor(private outil: OutilJeuService, private router: Router) {}
+
+  //Relatif au calcul
+  nombreRandom1: number = this.outil.nombre_1_a_100();
+  nombreRandom2: number = this.outil.nombre_1_a_100();
+  tableauOperateur: Array<String>;
+  operateurRandom: String;
+  regexChiffre: RegExp = new RegExp(/^[0-9]$/);
   // Gestion du calcul avec récuperation du mode dedans
-  gestionCalcul(valeur: String, event: KeyboardEvent) {
+  gestionCalcul(valeur: string, event: KeyboardEvent) {
+    // Forcer l'entrée des chiffres
+    if (!event.key.match(this.regexChiffre)) {
+      event.preventDefault();
+    }
     if (event.key == 'Enter') {
-      // Code du calcul ici
+      switch (this.operateurRandom) {
+        case '+':
+          if (this.nombreRandom1 + this.nombreRandom2 == parseInt(valeur)) {
+            console.log('correct !'); // A MODIFIER
+          } else {
+            console.log('incorrect !'); // A MODIFIER
+          }
+          this.nombreRandom1 = this.outil.nombre_1_a_100();
+          this.nombreRandom2 = this.outil.nombre_1_a_100();
+          this.operateurRandom = this.outil.operateur_random(
+            this.tableauOperateur
+          );
+          break;
+        case '-':
+          if (this.nombreRandom1 - this.nombreRandom2 == parseInt(valeur)) {
+            console.log('correct !'); // A MODIFIER
+          } else {
+            console.log('incorrect !'); // A MODIFIER
+          }
+          this.nombreRandom1 = this.outil.nombre_1_a_100();
+          this.nombreRandom2 = this.outil.nombre_1_a_100();
+          this.operateurRandom = this.outil.operateur_random(
+            this.tableauOperateur
+          );
+          break;
+        case '×':
+          if (this.nombreRandom1 * this.nombreRandom2 == parseInt(valeur)) {
+            console.log('correct !'); // A MODIFIER
+          } else {
+            console.log('incorrect !'); // A MODIFIER
+          }
+          this.nombreRandom1 = this.outil.nombre_1_a_100();
+          this.nombreRandom2 = this.outil.nombre_1_a_100();
+          this.operateurRandom = this.outil.operateur_random(
+            this.tableauOperateur
+          );
+          break;
+        default:
+          this.router.navigate(['accueil']);
+          break;
+      }
+
+      this.resultat.nativeElement.value = '';
     }
   }
   // Le code pour le fonctionnel du jeu avec les methodes ici !
@@ -121,6 +181,45 @@ export class CalculComponent implements AfterViewInit {
         this.jeuCalcul.nativeElement.style.display = '';
         this.resultat.nativeElement.focus();
         // Ici on recup le mode et on initie les nombre et l'operateur en fonction
+        switch (this.outil.mode$.getValue()) {
+          case 'tout-operation':
+            this.tableauOperateur = ['+', '-', '×'];
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case 'addition-multiplication':
+            this.tableauOperateur = ['+', '×'];
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case 'addition-soustraction':
+            this.tableauOperateur = ['+', '-'];
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case 'multiplication':
+            this.tableauOperateur = ['×'];
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case 'addition':
+            this.tableauOperateur = ['+'];
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case 'soustraction':
+            this.tableauOperateur = ['-'];
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+        }
+
         // Disparition du text
         setTimeout(() => {
           this.text.nativeElement.style.display = 'none';
@@ -144,7 +243,10 @@ export class CalculComponent implements AfterViewInit {
           } else {
             this.ms--;
           }
-          // Peut être colorier l'interface en fonction du compteur?
+          // Sous les 10 secondes, le chrono est rouge !
+          if (this.minute == 0 && this.seconde == 10 && this.ms == 0) {
+            this.chrono.nativeElement.style.color = 'red';
+          }
         }, 10);
       }
     }, 1000);

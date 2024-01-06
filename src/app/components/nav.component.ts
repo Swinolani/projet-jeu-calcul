@@ -9,6 +9,7 @@ import { RouterModule } from '@angular/router';
     <nav>
       <a routerLink="/accueil">Accueil</a>
       <a routerLink="/classement">Classement</a>
+      <a routerLink="/infos">Informations</a>
       <a routerLink="/login/connexion">Se connecter</a>
     </nav>
   `,
@@ -27,6 +28,7 @@ import { RouterModule } from '@angular/router';
     color: black;
     font-size: 1.8rem;
     font-weight: bold;
+    text-align:center;
   }
   a:hover {
     background-color: rgba(255, 255, 255, 0.212);

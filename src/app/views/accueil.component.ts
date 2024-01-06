@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { NavComponent } from '../components/nav.component';
 import { FormsModule, NgForm } from '@angular/forms';
+import { OutilJeuService } from '../services/outil-jeu.service';
 
 @Component({
   selector: 'app-accueil',
@@ -98,7 +99,7 @@ export class AccueilComponent {
 
   erreurBoutonCalculAvantJeu: String | undefined;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private outil: OutilJeuService) {}
   parametre(section: HTMLElement) {
     section.style.display = '';
 
@@ -117,7 +118,7 @@ export class AccueilComponent {
       this.erreurBoutonCalculAvantJeu = 'Selectionnez un niveau !';
     } else {
       this.erreurBoutonCalculAvantJeu = '';
-      // Envoyer form.value.mode dans un service que l'on recup dans calcul
+      this.outil.mode$.next(form.value.mode);
       this.router.navigate(['calcul']);
     }
   }
