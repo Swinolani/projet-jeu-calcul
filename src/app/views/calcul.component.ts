@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { OutilJeuService } from '../services/outil-jeu.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-calcul',
   standalone: true,
-  imports: [],
+  imports: [RouterModule],
   template: `
     <div #chrono class="chrono">
       0{{ minute }}:{{ seconde < 10 ? '0' : '' }}{{ seconde }}:{{
@@ -29,8 +30,64 @@ import { Router } from '@angular/router';
       </div>
     </div>
     <div #decompteur class="container">{{ compteur }}</div>
+    <div #statistique class="statistique">
+      <div class="bilan">
+        <h1>Résultat</h1>
+        <p class="infoStat">Joueur : Swinolani</p>
+        <!-- a modifier au back-->
+        <p class="infoStat">Mode de jeu : {{ modeDeJeu.getValue() }}</p>
+        <p class="infoStat">
+          Nombre de bonnes réponses : {{ nombreBonneReponse }}
+        </p>
+        <p class="infoStat">
+          Nombre de mauvaises réponses : {{ nombreMauvaiseReponse }}
+        </p>
+        <button>Enregistrer mon score</button>
+        <button routerLink="/accueil">Retour au menu</button>
+      </div>
+    </div>
   `,
   styles: `
+  /* ZONE STATISTIQUE */
+  .bilan {
+  width: 50%;
+  margin: 0 auto;
+  padding: 30px 20px;
+  background-color: antiquewhite;
+  border-radius: 20px;
+  }
+  h1 {
+    font-family: "Single Day", cursive;
+    font-size: 4rem;
+    margin-bottom: 0;
+    text-align:center;
+  }
+  .infoStat {
+    font-size: 1.5rem;
+    font-weight:bold;
+  }
+  .statistique{
+    position:absolute;
+    height:100%;
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  button {
+    padding: 1rem 3rem;
+    font-size: 1.4rem;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    background-color: rgb(1, 207, 80);
+    font-weight: bold;
+    margin:0 5px;
+}
+button:hover {
+  background-color: rgb(17, 216, 93);
+}
   /* ZONE TEXT + CHRONO */ 
   .chrono{
     position: absolute;
@@ -74,7 +131,7 @@ import { Router } from '@angular/router';
     background-color:rgb(0,0,0,0);
     border:1px solid black;
   }
-  /* CONTAINER */
+  /* CONTAINER DECOMPTE */
   .container{
     display:flex;
     justify-content:center;
@@ -96,6 +153,8 @@ export class CalculComponent implements AfterViewInit {
   @ViewChild('resultat') private resultat: ElementRef<HTMLInputElement>;
   @ViewChild('chrono') private chrono: ElementRef<HTMLDivElement>;
   @ViewChild('text') private text: ElementRef<HTMLParagraphElement>;
+  @ViewChild('statistique') private statistique: ElementRef<HTMLDivElement>;
+  modeDeJeu: BehaviorSubject<String> = this.outil.mode$;
 
   //Autres attribut
   // Relatif au chrono
@@ -111,61 +170,114 @@ export class CalculComponent implements AfterViewInit {
   nombreRandom2: number = this.outil.nombre_1_a_100();
   tableauOperateur: Array<String>;
   operateurRandom: String;
-  regexChiffre: RegExp = new RegExp(/^[0-9]$/);
+  //Relatif au resultat final
+  nombreBonneReponse: number = 0;
+  nombreMauvaiseReponse: number = 0;
+
+  regexChiffre: RegExp = new RegExp(/^-?[0-9]+$/);
   // Gestion du calcul avec récuperation du mode dedans
   gestionCalcul(valeur: string, event: KeyboardEvent) {
     // Forcer l'entrée des chiffres
-    if (!event.key.match(this.regexChiffre)) {
+    if (!(event.key.match(this.regexChiffre) || event.key == '-')) {
       event.preventDefault();
     }
     if (event.key == 'Enter') {
-      switch (this.operateurRandom) {
-        case '+':
-          if (this.nombreRandom1 + this.nombreRandom2 == parseInt(valeur)) {
-            console.log('correct !'); // A MODIFIER
-          } else {
-            console.log('incorrect !'); // A MODIFIER
-          }
-          this.nombreRandom1 = this.outil.nombre_1_a_100();
-          this.nombreRandom2 = this.outil.nombre_1_a_100();
-          this.operateurRandom = this.outil.operateur_random(
-            this.tableauOperateur
-          );
-          break;
-        case '-':
-          if (this.nombreRandom1 - this.nombreRandom2 == parseInt(valeur)) {
-            console.log('correct !'); // A MODIFIER
-          } else {
-            console.log('incorrect !'); // A MODIFIER
-          }
-          this.nombreRandom1 = this.outil.nombre_1_a_100();
-          this.nombreRandom2 = this.outil.nombre_1_a_100();
-          this.operateurRandom = this.outil.operateur_random(
-            this.tableauOperateur
-          );
-          break;
-        case '×':
-          if (this.nombreRandom1 * this.nombreRandom2 == parseInt(valeur)) {
-            console.log('correct !'); // A MODIFIER
-          } else {
-            console.log('incorrect !'); // A MODIFIER
-          }
-          this.nombreRandom1 = this.outil.nombre_1_a_100();
-          this.nombreRandom2 = this.outil.nombre_1_a_100();
-          this.operateurRandom = this.outil.operateur_random(
-            this.tableauOperateur
-          );
-          break;
-        default:
-          this.router.navigate(['accueil']);
-          break;
-      }
+      if (this.resultat.nativeElement.value.match(this.regexChiffre)) {
+        switch (this.operateurRandom) {
+          case '+':
+            if (this.nombreRandom1 + this.nombreRandom2 == parseInt(valeur)) {
+              this.text.nativeElement.textContent = 'Correct !';
+              this.text.nativeElement.style.color = 'green';
+              this.text.nativeElement.style.display = '';
+              this.nombreBonneReponse++;
+              setTimeout(() => {
+                this.text.nativeElement.style.display = 'none';
+              }, 1000);
+            } else {
+              this.text.nativeElement.textContent = `Incorrect ! Le résultat est ${
+                this.nombreRandom1 + this.nombreRandom2
+              }`;
+              this.text.nativeElement.style.color = 'red';
+              this.text.nativeElement.style.display = '';
+              this.nombreMauvaiseReponse++;
+              setTimeout(() => {
+                this.text.nativeElement.style.display = 'none';
+              }, 1000);
+            }
+            this.nombreRandom1 = this.outil.nombre_1_a_100();
+            this.nombreRandom2 = this.outil.nombre_1_a_100();
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case '-':
+            if (this.nombreRandom1 - this.nombreRandom2 == parseInt(valeur)) {
+              this.text.nativeElement.textContent = 'Correct !';
+              this.text.nativeElement.style.color = 'green';
+              this.text.nativeElement.style.display = '';
+              this.nombreBonneReponse++;
+              setTimeout(() => {
+                this.text.nativeElement.style.display = 'none';
+              }, 1000);
+            } else {
+              this.text.nativeElement.textContent = `Incorrect ! Le résultat est ${
+                this.nombreRandom1 - this.nombreRandom2
+              }`;
+              this.text.nativeElement.style.color = 'red';
+              this.text.nativeElement.style.display = '';
+              this.nombreMauvaiseReponse++;
+              setTimeout(() => {
+                this.text.nativeElement.style.display = 'none';
+              }, 1000);
+            }
+            this.nombreRandom1 = this.outil.nombre_1_a_100();
+            this.nombreRandom2 = this.outil.nombre_1_a_100();
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          case '×':
+            if (this.nombreRandom1 * this.nombreRandom2 == parseInt(valeur)) {
+              this.text.nativeElement.textContent = 'Correct !';
+              this.text.nativeElement.style.color = 'green';
+              this.text.nativeElement.style.display = '';
+              this.nombreBonneReponse++;
+              setTimeout(() => {
+                this.text.nativeElement.style.display = 'none';
+              }, 1000);
+            } else {
+              this.text.nativeElement.textContent = `Incorrect ! Le résultat est ${
+                this.nombreRandom1 * this.nombreRandom2
+              }`;
+              this.text.nativeElement.style.color = 'red';
+              this.text.nativeElement.style.display = '';
+              this.nombreMauvaiseReponse++;
+              setTimeout(() => {
+                this.text.nativeElement.style.display = 'none';
+              }, 1000);
+            }
+            this.nombreRandom1 = this.outil.nombre_1_a_100();
+            this.nombreRandom2 = this.outil.nombre_1_a_100();
+            this.operateurRandom = this.outil.operateur_random(
+              this.tableauOperateur
+            );
+            break;
+          default:
+            this.router.navigate(['accueil']);
+            break;
+        }
 
-      this.resultat.nativeElement.value = '';
+        this.resultat.nativeElement.value = '';
+      } else {
+        this.text.nativeElement.textContent = 'Entrez un résultat valide !';
+        this.text.nativeElement.style.color = 'red';
+        this.text.nativeElement.style.display = '';
+      }
     }
   }
   // Le code pour le fonctionnel du jeu avec les methodes ici !
   ngAfterViewInit(): void {
+    this.statistique.nativeElement.style.display = 'none';
     this.jeuCalcul.nativeElement.style.display = 'none';
     this.chrono.nativeElement.style.display = 'none';
     this.text.nativeElement.style.display = 'none';
@@ -230,8 +342,19 @@ export class CalculComponent implements AfterViewInit {
             if (this.seconde === 0) {
               if (this.minute === 0) {
                 clearInterval(chrono);
-                // Code pour cancel la possibilité d'entrer des réponse.
-                // On disablera l'input et on enlevera le display du calcul
+                // Impossible de taper des réponses et un popup de stat apparait
+                this.resultat.nativeElement.disabled = true;
+                this.statistique.nativeElement.classList.add(
+                  'animate__animated',
+                  'animate__fadeIn',
+                  'animate__faster'
+                );
+
+                this.statistique.nativeElement.style.display = '';
+                console.log(
+                  `${this.nombreBonneReponse} bonnes rep et ${this.nombreMauvaiseReponse} mauvaises rep`
+                );
+
                 return;
               }
               this.minute--;

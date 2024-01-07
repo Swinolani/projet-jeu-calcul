@@ -11,7 +11,5 @@ export class OutilJeuService {
   operateur_random(tableau: Array<String>): String {
     return tableau[Math.floor(Math.random() * tableau.length)];
   }
-  mode$: BehaviorSubject<String | null> = new BehaviorSubject<String | null>(
-    null
-  );
+  mode$: BehaviorSubject<String> = new BehaviorSubject<String>('');
 }

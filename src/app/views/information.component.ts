@@ -7,6 +7,7 @@ import { NavComponent } from '../components/nav.component';
   template: `
     <app-nav></app-nav>
     <p>information works!</p>
+    <!-- suite ici  -->
   `,
   styles: ``,
   imports: [NavComponent],
