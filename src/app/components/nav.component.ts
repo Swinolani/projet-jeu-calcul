@@ -14,7 +14,8 @@ import { RouterModule } from '@angular/router';
     </nav>
   `,
   styles: `nav {
-    width: 40%;
+    width: 60%;
+    flex-wrap:wrap;
     display: flex;
     justify-content: space-between;
     align-items: center;

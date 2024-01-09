@@ -35,7 +35,12 @@ import { BehaviorSubject } from 'rxjs';
         <h1>Résultat</h1>
         <p class="infoStat">Joueur : Swinolani</p>
         <!-- a modifier au back-->
-        <p class="infoStat">Mode de jeu : {{ modeDeJeu.getValue() }}</p>
+        <p class="infoStat">
+          Mode de jeu : @if( modeDeJeu.getValue().substring(0, 4)=='tout'){
+          toutes les opérations }@else {
+          {{ modeDeJeu.getValue().replace('-', ' et ') }}
+          }
+        </p>
         <p class="infoStat">
           Nombre de bonnes réponses : {{ nombreBonneReponse }}
         </p>
@@ -349,12 +354,7 @@ export class CalculComponent implements AfterViewInit {
                   'animate__fadeIn',
                   'animate__faster'
                 );
-
                 this.statistique.nativeElement.style.display = '';
-                console.log(
-                  `${this.nombreBonneReponse} bonnes rep et ${this.nombreMauvaiseReponse} mauvaises rep`
-                );
-
                 return;
               }
               this.minute--;
