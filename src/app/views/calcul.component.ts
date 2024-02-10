@@ -24,6 +24,7 @@ import { BehaviorSubject } from 'rxjs';
           id="result"
           maxlength="4"
           checked
+          autocomplete="off"
           #resultat
           (keypress)="gestionCalcul(resultat.value, $event)"
         />

@@ -1,12 +1,14 @@
-import { NgFor } from '@angular/common';
-import { Component } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Component, OnDestroy } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { OutilJeuService } from '../services/outil-jeu.service';
 
 @Component({
   selector: 'app-connexion',
   standalone: true,
-  imports: [RouterModule, FormsModule],
+  imports: [RouterModule, FormsModule, HttpClientModule],
   template: `
     <div class="toplogin">
       <h1 class="logintext">Connexion</h1>
@@ -15,26 +17,32 @@ import { RouterModule } from '@angular/router';
       <form
         class="logincontainer"
         #connexion="ngForm"
-        (ngSubmit)="envoyer(connexion)"
+        (ngSubmit)="envoyer(connexion, $event)"
       >
         <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          [(ngModel)]="email"
+          [style.borderColor]="!estValidemailAttribute ? 'red' : ''"
+          type="mail"
+          name="mail"
+          placeholder="adresse mail"
+          [(ngModel)]="mail"
         />
         <input
+          [style.borderColor]="!estValidePasswordAttribute ? 'red' : ''"
           type="password"
           name="password"
           placeholder="Mot de passe"
           [(ngModel)]="password"
         />
-        <input type="submit" class="loginbutton" value="S'inscrire" />
+        <input type="submit" class="loginbutton" value="Se connecter" />
       </form>
 
       <a routerLink="/login/inscription" class="link-insc-conn"
         >Inscrivez vous ici</a
       >
+      <a href="" class="link-insc-conn">Mot de passe oublié</a>
+      @if (errorMessage!="") {
+      <strong class="error">{{ errorMessage }}</strong>
+      }
     </div>
   `,
   styles: `
@@ -78,7 +86,7 @@ import { RouterModule } from '@angular/router';
   font-size: 0.95em;
 }
 
-.login input[type="email"],
+.login input[type="mail"],
 .login input[type="password"] {
   background: #fff;
   border-color: #bbb;
@@ -87,7 +95,7 @@ import { RouterModule } from '@angular/router';
 }
 
 /* Text fields' focus effect */
-.login input[type="email"]:focus,
+.login input[type="mail"]:focus,
 .login input[type="password"]:focus {
   border-color: #888;
 }
@@ -108,10 +116,59 @@ import { RouterModule } from '@angular/router';
 .link-insc-conn{
   display:inline-block;
   padding:15px;
-}`,
+}
+.error{
+  display:block;
+  text-align:center;
+  width:60%;
+  margin:0 auto;
+  padding:5px 0;
+  color:red;
+}
+`,
 })
-export class ConnexionComponent {
-  email: String = '';
-  password: String = '';
-  envoyer(elem: NgForm) {}
+export class ConnexionComponent implements OnDestroy {
+  mail: string = '';
+  password: string = '';
+  subscription: Subscription = new Subscription();
+  errorMessage: string = '';
+
+  estValidemailAttribute: boolean = true;
+  estValidePasswordAttribute: boolean = true;
+  url: string = 'http://localhost:8080/connexion';
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private outil: OutilJeuService
+  ) {}
+
+  envoyer(elem: NgForm, $event: MouseEvent) {
+    let mailValide = this.outil.mailValide.test(this.mail);
+    this.estValidemailAttribute = mailValide;
+    let passwordValide = this.outil.mdpValide.test(this.password);
+    this.estValidePasswordAttribute = passwordValide;
+
+    if (!mailValide || !passwordValide) {
+      $event.preventDefault();
+    } else {
+      this.subscription.add(
+        this.http
+          .post(this.url, elem.value, {
+            observe: 'response',
+            responseType: 'text',
+          })
+          .subscribe({
+            next: () => {
+              this.router.navigate(['accueil']);
+            },
+            error: () => {
+              this.errorMessage = `Addresse mail inexistante, veuillez vous inscrire`;
+            },
+          })
+      );
+    }
+  }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
 }
